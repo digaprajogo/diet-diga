@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Checklist</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0c0b;
+    --bg2: #111110;
+    --bg3: #171716;
+    --border: #222220;
+    --border2: #2a2a28;
+    --text: #e8e5de;
+    --text2: #a09d96;
+    --text3: #55534e;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --green: #4a8c5c;
+    --green2: #5db070;
+    --red: #c86e6e;
+    --blue: #4a6b8c;
+    --blue2: #6a8faf;
+    --amber: #c8a96e;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', 'Courier New', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+  .container { max-width: 480px; margin: 0 auto; padding: 0 16px 80px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header {
+    padding: 28px 4px 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .hdr-left {}
+  .hdr-eye { font-size: 9px; letter-spacing: 4px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
+  .hdr-title { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 900; color: var(--text); line-height: 1; margin-bottom: 4px; }
+  .hdr-sub { font-size: 11px; color: var(--text3); }
+
+  .score-badge {
+    background: var(--bg3);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 10px 16px;
+    text-align: center;
+    min-width: 78px;
+  }
+  .score-badge.med { border-color: #b8a050; }
+  .score-badge.low { border-color: #6b4444; }
+  .score-num { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; color: var(--gold); font-weight: 700; display: block; line-height: 1; }
+  .score-badge.med .score-num { color: #d4b85a; }
+  .score-badge.low .score-num { color: #c86e6e; }
+  .score-lbl { font-size: 8px; color: var(--text3); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; display: block; }
+
+  /* WEEK SELECTOR */
+  .week-selector {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 16px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 6px 10px;
+  }
+  .ws-lbl { font-size: 10px; color: var(--text3); letter-spacing: 1px; flex: 1; text-transform: uppercase; }
+  .wk-btn {
+    width: 30px; height: 30px;
+    background: var(--bg3); border: 1px solid var(--border2);
+    border-radius: 6px; color: var(--text2);
+    font-size: 16px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .wk-num { font-family: 'Playfair Display', Georgia, serif; font-size: 17px; color: var(--gold); min-width: 64px; text-align: center; font-weight: 700; }
+
+  /* TABS */
+  .tab-bar {
+    display: flex; background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 3px; margin-bottom: 24px;
+  }
+  .tab-btn {
+    flex: 1; padding: 10px; background: none; border: none;
+    border-radius: 8px; color: var(--text3);
+    font-family: inherit; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .tab-btn.active { background: var(--bg3); color: var(--gold); border: 1px solid var(--border2); }
+
+  /* SECTION */
+  .section { margin-bottom: 22px; }
+  .sec-label {
+    font-size: 9px; letter-spacing: 3px; color: var(--text3);
+    text-transform: uppercase; margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  /* HERO CARD (today's workout) */
+  .hero {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 14px; padding: 20px;
+    margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+  }
+  .hero-label { font-size: 9px; letter-spacing: 3px; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; }
+  .hero-day { font-family: 'Playfair Display', Georgia, serif; font-size: 28px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+  .type-badge {
+    display: inline-block; font-size: 9px;
+    letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px; margin-bottom: 12px;
+  }
+  .t-treadmill { background: #0a2a15; color: var(--green2); border: 1px solid #1a4a2a; }
+  .t-strength  { background: #0a1a2a; color: var(--blue2); border: 1px solid #1a3a5a; }
+  .t-easy      { background: #1a2a0a; color: #8ab050; border: 1px solid #2a4a1a; }
+  .t-rest      { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+
+  .hero-title { font-size: 17px; color: var(--text); font-weight: 500; margin-bottom: 4px; }
+  .hero-dur { font-size: 12px; color: var(--text2); }
+
+  .tmil-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+  .stat-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 6px; text-align: center; }
+  .stat-lbl { font-size: 8px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+  .stat-val { font-size: 13px; color: var(--gold2); font-weight: 500; }
+
+  .str-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-top: 14px; }
+  .str-header { padding: 10px 14px; font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; border-bottom: 1px solid var(--border); background: var(--bg2); }
+  .str-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .str-row:last-child { border-bottom: none; }
+  .str-name { color: var(--text2); }
+  .str-reps { color: var(--gold); }
+
+  /* CHECKLIST ITEMS */
+  .check-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+  .check-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer; transition: background 0.15s;
+    user-select: none;
+  }
+  .check-row:last-child { border-bottom: none; }
+  .check-row:active { background: var(--bg3); }
+  .check-row.done .check-text { color: var(--text3); text-decoration: line-through; }
+  .check-row.done .check-meta { color: var(--text3); opacity: 0.6; }
+
+  .checkbox {
+    width: 24px; height: 24px;
+    border-radius: 6px;
+    border: 2px solid var(--border2);
+    background: transparent;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .check-row.done .checkbox {
+    border-color: var(--green);
+    background: #0a2a15;
+  }
+  .check-row.done .checkbox::after {
+    content: '✓';
+    color: var(--green2);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .check-info { flex: 1; min-width: 0; }
+  .check-time { font-size: 9px; color: var(--gold); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 3px; }
+  .check-text { font-size: 14px; color: var(--text); margin-bottom: 2px; }
+  .check-meta { font-size: 11px; color: var(--text3); }
+
+  .check-cat {
+    font-size: 9px; letter-spacing: 1px;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text3); text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  /* TOMORROW */
+  .tomorrow-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+
+  /* WEEKLY GRID */
+  .week-grid { display: flex; flex-direction: column; gap: 6px; }
+  .week-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 14px;
+    position: relative;
+  }
+  .week-row.is-today { border-color: var(--gold); background: var(--bg3); }
+
+  .day-pill {
+    min-width: 38px; height: 38px;
+    border-radius: 8px; background: var(--bg3);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    border: 1px solid var(--border); flex-shrink: 0;
+  }
+  .day-pill.today { background: var(--gold); border-color: var(--gold); }
+  .dp-name { font-size: 8px; color: var(--text3); letter-spacing: 1px; }
+  .day-pill.today .dp-name { color: #0c0c0b; }
+  .dp-num { font-size: 13px; color: var(--text2); font-weight: 500; }
+  .day-pill.today .dp-num { color: #0c0c0b; font-weight: 700; }
+
+  .week-info { flex: 1; min-width: 0; }
+  .wi-name { font-size: 13px; color: var(--text); margin-bottom: 2px; }
+  .wi-stat { font-size: 10px; color: var(--text3); }
+
+  .progress-pill {
+    font-size: 10px; padding: 4px 8px;
+    border-radius: 12px; flex-shrink: 0;
+    font-weight: 500;
+  }
+  .pp-high { background: #0a2a15; color: var(--green2); border: 1px solid #1a4a2a; }
+  .pp-med  { background: #2a2410; color: #d4b85a; border: 1px solid #4a3e1a; }
+  .pp-low  { background: #2a1414; color: #c86e6e; border: 1px solid #4a1e1e; }
+  .pp-none { background: var(--bg3); color: var(--text3); border: 1px solid var(--border); }
+
+  .note-box {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-left: 3px solid var(--gold); border-radius: 8px;
+    padding: 12px 14px; font-size: 11px; color: var(--text3);
+    line-height: 1.7; margin-top: 10px;
+  }
+
+  /* RESET BUTTON */
+  .reset-btn {
+    width: 100%; padding: 11px;
+    background: none; border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text3);
+    font-family: inherit; font-size: 10px;
+    letter-spacing: 2px; text-transform: uppercase;
+    cursor: pointer; margin-top: 16px;
+  }
+  .reset-btn:active { background: var(--bg2); }
+
+  .fade-in { animation: fadeIn 0.25s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="hdr-left">
+      <div class="hdr-eye">Fat-Loss Program</div>
+      <div class="hdr-title">Daily<br>Checklist</div>
+      <div class="hdr-sub" id="hdrDate">—</div>
+    </div>
+    <div class="score-badge" id="scoreBadge">
+      <span class="score-num" id="scoreNum">0%</span>
+      <span class="score-lbl">Today</span>
+    </div>
+  </div>
+
+  <div class="week-selector">
+    <span class="ws-lbl">Program Week</span>
+    <button class="wk-btn" onclick="changeWk(-1)">−</button>
+    <span class="wk-num" id="wkNum">Week 1</span>
+    <button class="wk-btn" onclick="changeWk(1)">+</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tbHari" onclick="showTab('hari')">Hari Ini</button>
+    <button class="tab-btn" id="tbMinggu" onclick="showTab('minggu')">Minggu Ini</button>
+  </div>
+
+  <!-- HARI INI -->
+  <div id="tabHari">
+
+    <!-- TODAY'S WORKOUT -->
+    <div class="hero">
+      <div class="hero-label">Workout Hari Ini</div>
+      <div class="hero-day" id="heroDayName">—</div>
+      <div class="type-badge" id="heroBadge">—</div>
+      <div class="hero-title" id="heroTitle">—</div>
+      <div class="hero-dur" id="heroDur">—</div>
+
+      <div id="tmilStats" class="tmil-stats hidden">
+        <div class="stat-box"><div class="stat-lbl">Durasi</div><div class="stat-val" id="sDur">—</div></div>
+        <div class="stat-box"><div class="stat-lbl">Speed</div><div class="stat-val" id="sSpd">—</div></div>
+        <div class="stat-box"><div class="stat-lbl">Incline</div><div class="stat-val" id="sInc">—</div></div>
+      </div>
+
+      <div id="strBox" class="hidden">
+        <div class="str-box">
+          <div class="str-header">2–3 Rounds</div>
+          <div class="str-row"><span class="str-name">Chair Squat</span><span class="str-reps">12 reps</span></div>
+          <div class="str-row"><span class="str-name">Wall Push-up</span><span class="str-reps">10–15 reps</span></div>
+          <div class="str-row"><span class="str-name">Glute Bridge</span><span class="str-reps">15 reps</span></div>
+          <div class="str-row"><span class="str-name">Dead Bug</span><span class="str-reps">10 reps/sisi</span></div>
+          <div class="str-row"><span class="str-name">Calf Raise</span><span class="str-reps">15–20 reps</span></div>
+          <div class="str-row"><span class="str-name">Plank</span><span class="str-reps">20–30 detik</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="section">
+      <div class="sec-label">Checklist Harian</div>
+      <div class="check-card">
+
+        <!-- Workout -->
+        <div class="check-row" id="row-workout" onclick="toggleCheck('workout')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">Sesuai jadwal</div>
+            <div class="check-text" id="workoutText">Workout selesai</div>
+            <div class="check-meta" id="workoutMeta">—</div>
+          </div>
+          <span class="check-cat">workout</span>
+        </div>
+
+        <!-- Meal 1 -->
+        <div class="check-row" id="row-meal1" onclick="toggleCheck('meal1')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">10:00</div>
+            <div class="check-text">Meal 1 — Ayam Panggang</div>
+            <div class="check-meta">~651 kcal · 60g protein</div>
+          </div>
+          <span class="check-cat">meal</span>
+        </div>
+
+        <!-- Meal 2 -->
+        <div class="check-row" id="row-meal2" onclick="toggleCheck('meal2')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">14:00–16:00</div>
+            <div class="check-text">Meal 2 — Protein Shake</div>
+            <div class="check-meta">~469 kcal · 39g protein</div>
+          </div>
+          <span class="check-cat">meal</span>
+        </div>
+
+        <!-- Meal 3 -->
+        <div class="check-row" id="row-meal3" onclick="toggleCheck('meal3')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">19:00</div>
+            <div class="check-text" id="meal3Text">Meal 3 — —</div>
+            <div class="check-meta" id="meal3Meta">—</div>
+          </div>
+          <span class="check-cat">meal</span>
+        </div>
+
+        <!-- Rule: no liquid cals -->
+        <div class="check-row" id="row-noLiq" onclick="toggleCheck('noLiq')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">Sepanjang hari</div>
+            <div class="check-text">Zero liquid calories</div>
+            <div class="check-meta">No boba, sweet tea, juice, sweet coffee</div>
+          </div>
+          <span class="check-cat">rule</span>
+        </div>
+
+        <!-- Rule: stop at 20 -->
+        <div class="check-row" id="row-stop20" onclick="toggleCheck('stop20')">
+          <div class="checkbox"></div>
+          <div class="check-info">
+            <div class="check-time">20:00</div>
+            <div class="check-text">Stop makan sebelum jam 20:00</div>
+            <div class="check-meta">Setelah itu air putih saja</div>
+          </div>
+          <span class="check-cat">rule</span>
+        </div>
+
+      </div>
+      <button class="reset-btn" onclick="resetToday()">Reset Checklist Hari Ini</button>
+    </div>
+
+    <!-- TOMORROW -->
+    <div class="section">
+      <div class="sec-label">Besok</div>
+      <div class="tomorrow-card">
+        <div class="hero-label" style="margin-bottom:6px;">Jadwal Besok</div>
+        <div class="hero-title" id="tmrTitle" style="font-size:15px;">—</div>
+        <div class="type-badge" id="tmrBadge" style="margin:6px 0 4px;">—</div>
+        <div class="hero-dur" id="tmrDur">—</div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      ⚡ Workout: bisa ngobrol kalimat pendek = pas. Pusing / mual → stop.<br>
+      🍽️ Tiap meal: protein dulu di piring, baru karbo. Minum air putih banyak.
+    </div>
+  </div>
+
+  <!-- MINGGU INI -->
+  <div id="tabMinggu" class="hidden">
+    <div class="section">
+      <div class="sec-label">Workout Mingguan</div>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+    <div class="note-box">
+      Treadmill 4×/minggu (Sen-Rab-Jum + Sabtu easy) · Strength 2×/minggu (Sel-Kam) · Minggu rest.
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== DATA =====
+const WORKOUTS = {
+  0: { name: 'Treadmill Incline', dur: '30–40 menit', type: 'treadmill' },
+  1: { name: 'Home Strength', dur: '25–30 menit', type: 'strength' },
+  2: { name: 'Treadmill Incline', dur: '30–40 menit', type: 'treadmill' },
+  3: { name: 'Home Strength', dur: '25–30 menit', type: 'strength' },
+  4: { name: 'Treadmill Incline', dur: '30–40 menit', type: 'treadmill' },
+  5: { name: 'Easy Walk', dur: '45–60 menit', type: 'easy' },
+  6: { name: 'Rest & Stretching', dur: 'Istirahat / jalan santai', type: 'rest' },
+};
+const DAY_NAMES = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const PROG = [
+  { dur: '20–30 menit', spd: '4 km/h',       inc: '3–6%'  },
+  { dur: '30 menit',    spd: '4–4.5 km/h',   inc: '6–8%'  },
+  { dur: '35–40 menit', spd: '4.5–5 km/h',   inc: '8–10%' },
+  { dur: '40–45 menit', spd: '4.5–5.5 km/h', inc: '8–12%' }
+];
+const TYPE_CLASS = { treadmill:'t-treadmill', strength:'t-strength', easy:'t-easy', rest:'t-rest' };
+
+// ===== STATE =====
+let weekProg = 1;
+let checks = {
+  workout: false,
+  meal1: false,
+  meal2: false,
+  meal3: false,
+  noLiq: false,
+  stop20: false
+};
+
+// ===== HELPERS =====
+function jsToWd(jsDay) { return jsDay === 0 ? 6 : jsDay - 1; }
+function fmtDate(d) { return d.getDate() + ' ' + MONTHS_ID[d.getMonth()] + ' ' + d.getFullYear(); }
+function isGanjil(d) { return d.getDate() % 2 !== 0; }
+function typeCls(t) { return TYPE_CLASS[t] || 't-rest'; }
+
+// ===== RENDER =====
+function renderToday() {
+  const now = new Date();
+  const wd  = jsToWd(now.getDay());
+  const w   = WORKOUTS[wd];
+  const p   = PROG[weekProg - 1];
+  const ganjil = isGanjil(now);
+
+  // Header
+  setText('hdrDate', DAY_NAMES[wd] + ' · ' + fmtDate(now));
+  setText('wkNum', 'Week ' + weekProg);
+
+  // Hero
+  setText('heroDayName', DAY_NAMES[wd]);
+  const badge = id('heroBadge');
+  badge.textContent = w.type.toUpperCase();
+  badge.className = 'type-badge ' + typeCls(w.type);
+  setText('heroTitle', w.name);
+  setText('heroDur', w.dur);
+
+  // Treadmill stats / strength box
+  id('tmilStats').classList.toggle('hidden', w.type !== 'treadmill' && w.type !== 'easy');
+  id('strBox').classList.toggle('hidden', w.type !== 'strength');
+  if (w.type === 'treadmill' || w.type === 'easy') {
+    setText('sDur', p.dur);
+    setText('sSpd', p.spd);
+    setText('sInc', p.inc);
+  }
+
+  // Workout checklist row
+  setText('workoutText', w.type === 'rest' ? 'Rest day (stretching opsional)' : 'Workout: ' + w.name);
+  setText('workoutMeta', w.type === 'rest' ? 'Tidak perlu di-check' : w.dur);
+
+  // Meal 3 dynamic
+  if (ganjil) {
+    setText('meal3Text', 'Meal 3 — Ikan Panggang');
+    setText('meal3Meta', '~839 kcal · 77g protein');
+  } else {
+    setText('meal3Text', 'Meal 3 — Daging Panggang');
+    setText('meal3Meta', '~853 kcal · 73g protein');
+  }
+
+  // Tomorrow
+  const tmrWd = (wd + 1) % 7;
+  const tmrW  = WORKOUTS[tmrWd];
+  setText('tmrTitle', DAY_NAMES[tmrWd] + ' — ' + tmrW.name);
+  const tmrB = id('tmrBadge');
+  tmrB.textContent = tmrW.type.toUpperCase();
+  tmrB.className = 'type-badge ' + typeCls(tmrW.type);
+  setText('tmrDur', tmrW.dur);
+
+  // Update checkboxes visual state
+  Object.keys(checks).forEach(k => {
+    const row = id('row-' + k);
+    if (row) row.classList.toggle('done', checks[k]);
+  });
+
+  // Score
+  updateScore();
+}
+
+function updateScore() {
+  const now = new Date();
+  const wd  = jsToWd(now.getDay());
+  const w   = WORKOUTS[wd];
+
+  // If rest day, workout doesn't count
+  const totalItems = w.type === 'rest' ? 5 : 6;
+  let done = 0;
+  if (w.type !== 'rest' && checks.workout) done++;
+  if (checks.meal1) done++;
+  if (checks.meal2) done++;
+  if (checks.meal3) done++;
+  if (checks.noLiq) done++;
+  if (checks.stop20) done++;
+
+  const pct = Math.round((done / totalItems) * 100);
+  setText('scoreNum', pct + '%');
+
+  const sb = id('scoreBadge');
+  sb.className = 'score-badge' + (pct >= 80 ? '' : pct >= 50 ? ' med' : ' low');
+}
+
+function renderWeekly() {
+  const now = new Date(); now.setHours(0,0,0,0);
+  const wd  = jsToWd(now.getDay());
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - wd);
+
+  const grid = id('weekGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const isToday = d.getTime() === now.getTime();
+    const w = WORKOUTS[i];
+
+    // Progress pill (only meaningful for today)
+    let pillCls = 'pp-none', pillText = w.type === 'rest' ? 'rest' : 'jadwal';
+    if (isToday) {
+      const now2 = new Date();
+      const wd2  = jsToWd(now2.getDay());
+      const w2   = WORKOUTS[wd2];
+      const totalItems = w2.type === 'rest' ? 5 : 6;
+      let doneCount = 0;
+      if (w2.type !== 'rest' && checks.workout) doneCount++;
+      if (checks.meal1) doneCount++;
+      if (checks.meal2) doneCount++;
+      if (checks.meal3) doneCount++;
+      if (checks.noLiq) doneCount++;
+      if (checks.stop20) doneCount++;
+      const pct = Math.round((doneCount / totalItems) * 100);
+      pillText = pct + '%';
+      pillCls = pct >= 80 ? 'pp-high' : pct >= 50 ? 'pp-med' : 'pp-low';
+    }
+
+    const row = document.createElement('div');
+    row.className = 'week-row' + (isToday ? ' is-today' : '');
+    row.innerHTML =
+      '<div class="day-pill ' + (isToday ? 'today' : '') + '">' +
+        '<div class="dp-name">' + DAY_NAMES[i].slice(0,3).toUpperCase() + '</div>' +
+        '<div class="dp-num">' + d.getDate() + '</div>' +
+      '</div>' +
+      '<div class="week-info">' +
+        '<div class="wi-name">' + w.name + '</div>' +
+        '<div class="wi-stat">' + w.dur + '</div>' +
+      '</div>' +
+      '<span class="progress-pill ' + pillCls + '">' + pillText + '</span>';
+    grid.appendChild(row);
+  }
+}
+
+// ===== ACTIONS =====
+function toggleCheck(key) {
+  checks[key] = !checks[key];
+  renderToday();
+}
+
+function resetToday() {
+  Object.keys(checks).forEach(k => checks[k] = false);
+  renderToday();
+}
+
+function changeWk(dir) {
+  weekProg = Math.min(4, Math.max(1, weekProg + dir));
+  renderToday();
+}
+
+function showTab(t) {
+  id('tabHari').classList.toggle('hidden', t !== 'hari');
+  id('tabMinggu').classList.toggle('hidden', t !== 'minggu');
+  id('tbHari').classList.toggle('active', t === 'hari');
+  id('tbMinggu').classList.toggle('active', t === 'minggu');
+  if (t === 'minggu') renderWeekly();
+}
+
+// ===== UTILS =====
+function id(s) { return document.getElementById(s); }
+function setText(s, v) { const el = id(s); if (el) el.textContent = v; }
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', renderToday);
+</script>
+</body>
+</html>

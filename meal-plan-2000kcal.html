@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Plan 2000 kcal</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,900;1,9..144,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f0e8;
+    --bg2: #ede8de;
+    --bg3: #ffffff;
+    --border: #d8d0c0;
+    --border2: #c8bfac;
+    --text: #1a1814;
+    --text2: #5a5448;
+    --text3: #9a9088;
+    --amber: #b8720a;
+    --amber2: #d4891a;
+    --green: #2d6b3a;
+    --green2: #3d8b4e;
+    --red: #8b3a2d;
+    --blue: #2d4a8b;
+    --ink: #1a1814;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.03) 28px);
+    pointer-events: none; z-index: 0;
+  }
+
+  .container { max-width: 480px; margin: 0 auto; padding: 0 16px 80px; position: relative; z-index: 1; }
+
+  .header { padding: 28px 0 20px; border-bottom: 2px solid var(--ink); margin-bottom: 24px; }
+  .header-eyebrow { font-size: 9px; letter-spacing: 5px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; }
+  .header-title { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 900; color: var(--ink); line-height: 0.95; margin-bottom: 6px; }
+  .header-title span { color: var(--amber); font-style: italic; }
+  .header-meta { font-size: 11px; color: var(--text3); display: flex; gap: 16px; margin-top: 8px; }
+  .meta-chip { background: var(--ink); color: var(--bg); padding: 2px 8px; border-radius: 3px; font-size: 9px; letter-spacing: 1px; }
+
+  .tab-bar { display: flex; border-bottom: 1.5px solid var(--border2); margin-bottom: 24px; }
+  .tab-btn { flex: 1; padding: 10px 4px; background: none; border: none; color: var(--text3); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1.5px; transition: all 0.2s; }
+  .tab-btn.active { color: var(--amber); border-bottom-color: var(--amber); }
+
+  .section { margin-bottom: 28px; }
+  .section-label { font-size: 9px; letter-spacing: 3px; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  .today-banner { background: var(--ink); border-radius: 12px; padding: 18px 20px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .today-day { font-family: 'Fraunces', serif; font-size: 22px; color: var(--bg); }
+  .today-type-label { font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 3px; }
+  .today-meal3-name { font-size: 14px; color: var(--amber2); font-weight: 500; }
+  .today-kcal { text-align: right; }
+  .today-kcal-num { font-family: 'Fraunces', serif; font-size: 28px; color: var(--amber); font-weight: 900; }
+  .today-kcal-unit { font-size: 9px; color: var(--text3); letter-spacing: 1px; }
+
+  .meal-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+  .meal-card-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 12px; border-bottom: 1px solid var(--border); cursor: pointer; user-select: none; }
+  .meal-time { font-size: 9px; letter-spacing: 2px; color: var(--amber); text-transform: uppercase; margin-bottom: 3px; }
+  .meal-name { font-family: 'Fraunces', serif; font-size: 18px; color: var(--ink); font-weight: 600; }
+  .meal-subtitle { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .meal-card-right { text-align: right; }
+  .meal-kcal { font-family: 'Fraunces', serif; font-size: 20px; color: var(--ink); font-weight: 600; }
+  .meal-kcal-unit { font-size: 9px; color: var(--text3); }
+  .meal-prot { font-size: 11px; color: var(--green); margin-top: 2px; font-weight: 500; }
+
+  .meal-body { padding: 14px 16px; display: none; }
+  .meal-body.open { display: block; }
+
+  .ingredient-list { margin-bottom: 14px; }
+  .ingredient-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+  .ingredient-row:last-child { border-bottom: none; }
+  .ing-name { color: var(--text2); }
+  .ing-amount { color: var(--amber); font-weight: 500; }
+
+  .steps-label { font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 8px; margin-top: 4px; }
+  .step-row { display: flex; gap: 10px; padding: 6px 0; font-size: 12px; line-height: 1.5; color: var(--text2); }
+  .step-num { min-width: 20px; height: 20px; background: var(--ink); color: var(--bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; flex-shrink: 0; margin-top: 1px; }
+
+  .macro-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+  .macro-chip { text-align: center; background: var(--bg2); border-radius: 6px; padding: 8px 4px; }
+  .macro-val { font-size: 14px; color: var(--ink); font-weight: 500; }
+  .macro-label { font-size: 8px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+  .expand-icon { width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--text3); transition: transform 0.2s; flex-shrink: 0; margin-left: 10px; }
+  .expand-icon.open { transform: rotate(180deg); color: var(--amber); border-color: var(--amber); }
+
+  .total-bar { background: var(--ink); border-radius: 12px; padding: 16px 20px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .total-item { text-align: center; }
+  .total-val { font-family: 'Fraunces', serif; font-size: 18px; color: var(--amber2); font-weight: 900; }
+  .total-label { font-size: 8px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+
+  .meal3-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .meal3-tab { padding: 6px 14px; border-radius: 20px; font-size: 10px; letter-spacing: 1px; border: 1.5px solid var(--border2); background: none; color: var(--text3); cursor: pointer; font-family: 'DM Mono', monospace; transition: all 0.2s; }
+  .active-ikan { background: #e8f5ea; border-color: var(--green); color: var(--green); }
+  .active-daging { background: #f5e8e8; border-color: var(--red); color: var(--red); }
+
+  .week-table { width: 100%; border-collapse: collapse; }
+  .week-table th { font-size: 8px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; padding: 8px; text-align: left; border-bottom: 1.5px solid var(--ink); }
+  .week-table td { padding: 10px 8px; border-bottom: 1px solid var(--border); font-size: 11px; vertical-align: top; }
+  .week-table tr.today-row td { background: #fff8ee; }
+  .week-table tr.today-row td:first-child { font-weight: 700; color: var(--amber); }
+  .meal3-ikan { color: var(--green); font-weight: 500; }
+  .meal3-daging { color: var(--red); font-weight: 500; }
+  .sayur-name { color: var(--text3); font-size: 10px; }
+
+  .grocery-cat { margin-bottom: 18px; }
+  .grocery-cat-title { font-size: 9px; letter-spacing: 3px; color: var(--amber); text-transform: uppercase; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .grocery-item { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 12px; }
+  .grocery-item:last-child { border-bottom: none; }
+  .grocery-name { color: var(--text2); }
+  .grocery-qty { color: var(--ink); font-weight: 500; }
+
+  .note-box { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--amber); border-radius: 8px; padding: 12px 14px; font-size: 11px; color: var(--text2); line-height: 1.7; margin-bottom: 14px; }
+  .note-box strong { color: var(--ink); display: block; margin-bottom: 4px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; }
+
+  .fade-in { animation: fadeIn 0.25s ease forwards; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Fat-Loss Diet Plan</div>
+    <div class="header-title">Meal Plan<br><span>~2,000 kcal</span></div>
+    <div class="header-meta">
+      <span class="meta-chip">~175g Protein</span>
+      <span class="meta-chip">4 Resep</span>
+      <span class="meta-chip">10:00–20:00</span>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('hari-ini')">Hari Ini</button>
+    <button class="tab-btn" onclick="switchTab('resep')">Resep</button>
+    <button class="tab-btn" onclick="switchTab('jadwal')">Jadwal</button>
+    <button class="tab-btn" onclick="switchTab('belanja')">Belanja</button>
+  </div>
+
+  <!-- HARI INI -->
+  <div id="tab-hari-ini" class="fade-in">
+    <div class="today-banner">
+      <div>
+        <div class="today-type-label" id="todayDayLabel">—</div>
+        <div class="today-day" id="todayDayName">—</div>
+        <div style="font-size:10px;color:#666;margin-top:4px;" id="todayDateStr">—</div>
+      </div>
+      <div class="today-kcal">
+        <div class="today-kcal-num" id="todayTotalKcal">—</div>
+        <div class="today-kcal-unit">kcal</div>
+        <div style="font-size:10px;color:var(--amber);margin-top:4px;" id="todayMeal3Name">—</div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-card-header" onclick="toggleCard('today-m1')">
+        <div>
+          <div class="meal-time">10:00 · Meal 1</div>
+          <div class="meal-name">Ayam Panggang</div>
+          <div class="meal-subtitle">+ Nasi · Sayur (<span id="todaySayur">—</span>) · Telur</div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <div class="meal-card-right"><div class="meal-kcal">651 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">60g protein</div></div>
+          <div class="expand-icon" id="icon-today-m1">▾</div>
+        </div>
+      </div>
+      <div class="meal-body" id="body-today-m1">
+        <div class="ingredient-list">
+          <div class="ingredient-row"><span class="ing-name">Dada ayam tanpa kulit (matang)</span><span class="ing-amount">150g</span></div>
+          <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">130g</span></div>
+          <div class="ingredient-row"><span class="ing-name">Sayur tumis (ganti tiap hari)</span><span class="ing-amount">150g</span></div>
+          <div class="ingredient-row"><span class="ing-name">Telur rebus</span><span class="ing-amount">1 butir (55g)</span></div>
+          <div class="ingredient-row"><span class="ing-name">Minyak + bumbu</span><span class="ing-amount">~59 kcal</span></div>
+        </div>
+        <div class="steps-label">Cara Masak</div>
+        <div class="step-row"><div class="step-num">1</div><div>Marinasi ayam: kecap asin + bawang putih + merica, 5–10 menit</div></div>
+        <div class="step-row"><div class="step-num">2</div><div>Panggang teflon anti-lengket tanpa minyak, 5–6 menit per sisi</div></div>
+        <div class="step-row"><div class="step-num">3</div><div>Tumis sayur: bawang putih + garam, 2–3 menit</div></div>
+        <div class="step-row"><div class="step-num">4</div><div>Rebus telur 8 menit dari air dingin</div></div>
+        <div class="macro-row">
+          <div class="macro-chip"><div class="macro-val">651</div><div class="macro-label">kcal</div></div>
+          <div class="macro-chip"><div class="macro-val">60g</div><div class="macro-label">protein</div></div>
+          <div class="macro-chip"><div class="macro-val">~50g</div><div class="macro-label">karbo</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-card-header" onclick="toggleCard('today-m2')">
+        <div>
+          <div class="meal-time">14:00–16:00 · Meal 2</div>
+          <div class="meal-name">Protein Shake</div>
+          <div class="meal-subtitle">+ Pisang · Almond 25 butir</div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <div class="meal-card-right"><div class="meal-kcal">469 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">39g protein</div></div>
+          <div class="expand-icon" id="icon-today-m2">▾</div>
+        </div>
+      </div>
+      <div class="meal-body" id="body-today-m2">
+        <div class="ingredient-list">
+          <div class="ingredient-row"><span class="ing-name">Whey protein</span><span class="ing-amount">1 scoop (30g)</span></div>
+          <div class="ingredient-row"><span class="ing-name">Susu UHT skim</span><span class="ing-amount">250ml</span></div>
+          <div class="ingredient-row"><span class="ing-name">Pisang ambon besar</span><span class="ing-amount">1 buah (130g)</span></div>
+          <div class="ingredient-row"><span class="ing-name">Almond</span><span class="ing-amount">25 butir (25g)</span></div>
+        </div>
+        <div class="steps-label">Cara Buat</div>
+        <div class="step-row"><div class="step-num">1</div><div>Kocok whey + susu UHT skim dalam shaker, 30 detik</div></div>
+        <div class="step-row"><div class="step-num">2</div><div>Makan pisang + almond terpisah, atau blend jadi smoothie</div></div>
+        <div class="macro-row">
+          <div class="macro-chip"><div class="macro-val">469</div><div class="macro-label">kcal</div></div>
+          <div class="macro-chip"><div class="macro-val">39g</div><div class="macro-label">protein</div></div>
+          <div class="macro-chip"><div class="macro-val">~45g</div><div class="macro-label">karbo</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="meal-card">
+      <div class="meal-card-header" onclick="toggleCard('today-m3')">
+        <div>
+          <div class="meal-time">19:00 · Meal 3</div>
+          <div class="meal-name" id="todayM3Title">—</div>
+          <div class="meal-subtitle" id="todayM3Sub">—</div>
+        </div>
+        <div style="display:flex;align-items:center;">
+          <div class="meal-card-right">
+            <div class="meal-kcal" id="todayM3Kcal">— <span class="meal-kcal-unit">kcal</span></div>
+            <div class="meal-prot" id="todayM3Prot">—</div>
+          </div>
+          <div class="expand-icon" id="icon-today-m3">▾</div>
+        </div>
+      </div>
+      <div class="meal-body" id="body-today-m3"></div>
+    </div>
+
+    <div class="total-bar">
+      <div class="total-item"><div class="total-val" id="totalKcal">—</div><div class="total-label">Total kcal</div></div>
+      <div class="total-item"><div class="total-val" id="totalProt">—</div><div class="total-label">Protein</div></div>
+      <div class="total-item"><div class="total-val">~50g</div><div class="total-label">Lemak</div></div>
+      <div class="total-item"><div class="total-val">~140g</div><div class="total-label">Karbo</div></div>
+    </div>
+
+    <div class="note-box"><strong>🕐 Eating Window</strong>Mulai makan jam 10:00. Stop sebelum 20:00. Setelah itu air putih saja.</div>
+  </div>
+
+  <!-- RESEP -->
+  <div id="tab-resep" class="hidden fade-in">
+    <div class="section">
+      <div class="section-label">Meal 1 — Setiap Hari</div>
+      <div class="meal-card">
+        <div class="meal-card-header" onclick="toggleCard('r1')">
+          <div><div class="meal-time">Resep 1</div><div class="meal-name">Ayam Panggang + Nasi</div><div class="meal-subtitle">+ Sayur tumis + Telur rebus</div></div>
+          <div style="display:flex;align-items:center;">
+            <div class="meal-card-right"><div class="meal-kcal">651 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">60g protein</div></div>
+            <div class="expand-icon" id="icon-r1">▾</div>
+          </div>
+        </div>
+        <div class="meal-body" id="body-r1">
+          <div class="ingredient-list">
+            <div class="ingredient-row"><span class="ing-name">Dada ayam tanpa kulit (matang)</span><span class="ing-amount">150g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">130g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Sayur tumis (bayam/kangkung/brokoli)</span><span class="ing-amount">150g bebas</span></div>
+            <div class="ingredient-row"><span class="ing-name">Telur rebus</span><span class="ing-amount">1 butir (55g)</span></div>
+            <div class="ingredient-row"><span class="ing-name">Kecap asin</span><span class="ing-amount">1 sdm</span></div>
+            <div class="ingredient-row"><span class="ing-name">Bawang putih + merica</span><span class="ing-amount">secukupnya</span></div>
+            <div class="ingredient-row"><span class="ing-name">Minyak / minyak spray</span><span class="ing-amount">1 sdt</span></div>
+          </div>
+          <div class="steps-label">Cara Masak</div>
+          <div class="step-row"><div class="step-num">1</div><div>Marinasi ayam: kecap asin + bawang putih + merica, 5–10 menit (bisa malam sebelumnya)</div></div>
+          <div class="step-row"><div class="step-num">2</div><div>Panggang teflon anti-lengket tanpa minyak, api sedang, 5–6 menit per sisi</div></div>
+          <div class="step-row"><div class="step-num">3</div><div>Tumis sayur: bawang putih + garam, 2–3 menit</div></div>
+          <div class="step-row"><div class="step-num">4</div><div>Rebus telur 8 menit dari air dingin, kupas</div></div>
+          <div class="step-row"><div class="step-num">5</div><div>Variasi sayur tiap hari: bayam → brokoli → kangkung → dst</div></div>
+          <div class="macro-row">
+            <div class="macro-chip"><div class="macro-val">651</div><div class="macro-label">kcal</div></div>
+            <div class="macro-chip"><div class="macro-val">60g</div><div class="macro-label">protein</div></div>
+            <div class="macro-chip"><div class="macro-val">~50g</div><div class="macro-label">karbo</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Meal 2 — Setiap Hari</div>
+      <div class="meal-card">
+        <div class="meal-card-header" onclick="toggleCard('r2')">
+          <div><div class="meal-time">Resep 2</div><div class="meal-name">Protein Shake + Pisang</div><div class="meal-subtitle">+ Almond 25 butir</div></div>
+          <div style="display:flex;align-items:center;">
+            <div class="meal-card-right"><div class="meal-kcal">469 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">39g protein</div></div>
+            <div class="expand-icon" id="icon-r2">▾</div>
+          </div>
+        </div>
+        <div class="meal-body" id="body-r2">
+          <div class="ingredient-list">
+            <div class="ingredient-row"><span class="ing-name">Whey protein (vanilla/coklat)</span><span class="ing-amount">1 scoop (30g)</span></div>
+            <div class="ingredient-row"><span class="ing-name">Susu UHT skim</span><span class="ing-amount">250ml</span></div>
+            <div class="ingredient-row"><span class="ing-name">Pisang ambon besar</span><span class="ing-amount">1 buah (130g)</span></div>
+            <div class="ingredient-row"><span class="ing-name">Almond</span><span class="ing-amount">25 butir (25g)</span></div>
+          </div>
+          <div class="steps-label">Cara Buat</div>
+          <div class="step-row"><div class="step-num">1</div><div>Kocok whey + susu UHT skim dalam shaker bottle, 30 detik</div></div>
+          <div class="step-row"><div class="step-num">2</div><div>Makan pisang + almond terpisah, atau blend jadi smoothie</div></div>
+          <div class="step-row"><div class="step-num">3</div><div>Variasi buah: pisang → apel → pir → pisang. Shake tetap sama</div></div>
+          <div class="macro-row">
+            <div class="macro-chip"><div class="macro-val">469</div><div class="macro-label">kcal</div></div>
+            <div class="macro-chip"><div class="macro-val">39g</div><div class="macro-label">protein</div></div>
+            <div class="macro-chip"><div class="macro-val">~45g</div><div class="macro-label">karbo</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Meal 3 — Gantian Ganjil / Genap</div>
+      <div class="meal3-tabs">
+        <button class="meal3-tab active-ikan" id="r3tab" onclick="showMeal3Resep('ikan')">Resep 3 — Ikan (Ganjil)</button>
+        <button class="meal3-tab" id="r4tab" onclick="showMeal3Resep('daging')">Resep 4 — Daging (Genap)</button>
+      </div>
+
+      <div id="resep-ikan" class="meal-card">
+        <div class="meal-card-header" onclick="toggleCard('r3')">
+          <div><div class="meal-time">Resep 3 · Tanggal Ganjil</div><div class="meal-name">Ikan Panggang</div><div class="meal-subtitle">+ Nasi · Sayur · Tahu · Tempe</div></div>
+          <div style="display:flex;align-items:center;">
+            <div class="meal-card-right"><div class="meal-kcal">839 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">77g protein</div></div>
+            <div class="expand-icon" id="icon-r3">▾</div>
+          </div>
+        </div>
+        <div class="meal-body" id="body-r3">
+          <div class="ingredient-list">
+            <div class="ingredient-row"><span class="ing-name">Ikan kakap / kembung / nila</span><span class="ing-amount">220g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">150g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Brokoli</span><span class="ing-amount">100g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Wortel</span><span class="ing-amount">100g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Tahu putih</span><span class="ing-amount">120g (2 potong)</span></div>
+            <div class="ingredient-row"><span class="ing-name">Tempe</span><span class="ing-amount">80g (3–4 potong)</span></div>
+            <div class="ingredient-row"><span class="ing-name">Kunyit + garam + bawang putih</span><span class="ing-amount">secukupnya</span></div>
+            <div class="ingredient-row"><span class="ing-name">Saus tiram + minyak</span><span class="ing-amount">½ sdt + 1 sdt</span></div>
+          </div>
+          <div class="steps-label">Cara Masak</div>
+          <div class="step-row"><div class="step-num">1</div><div>Balur ikan: kunyit + garam + bawang putih, diamkan 5 menit</div></div>
+          <div class="step-row"><div class="step-num">2</div><div>Panggang teflon api sedang, 4–5 menit per sisi</div></div>
+          <div class="step-row"><div class="step-num">3</div><div>Tahu: panggang teflon tanpa minyak sampai kekuningan</div></div>
+          <div class="step-row"><div class="step-num">4</div><div>Tempe: panggang teflon + kecap asin + bawang putih</div></div>
+          <div class="step-row"><div class="step-num">5</div><div>Tumis brokoli + wortel: bawang putih + saus tiram + air, 3 menit</div></div>
+          <div class="macro-row">
+            <div class="macro-chip"><div class="macro-val">839</div><div class="macro-label">kcal</div></div>
+            <div class="macro-chip"><div class="macro-val">77g</div><div class="macro-label">protein</div></div>
+            <div class="macro-chip"><div class="macro-val">~40g</div><div class="macro-label">karbo</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="resep-daging" class="hidden meal-card">
+        <div class="meal-card-header" onclick="toggleCard('r4')">
+          <div><div class="meal-time">Resep 4 · Tanggal Genap</div><div class="meal-name">Daging Panggang</div><div class="meal-subtitle">+ Salad · Nasi kecil · Tempe</div></div>
+          <div style="display:flex;align-items:center;">
+            <div class="meal-card-right"><div class="meal-kcal">853 <span class="meal-kcal-unit">kcal</span></div><div class="meal-prot">73g protein</div></div>
+            <div class="expand-icon" id="icon-r4">▾</div>
+          </div>
+        </div>
+        <div class="meal-body" id="body-r4">
+          <div class="ingredient-list">
+            <div class="ingredient-row"><span class="ing-name">Daging sirloin / has dalam</span><span class="ing-amount">200g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">120g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Selada + tomat + timun</span><span class="ing-amount">200g bebas</span></div>
+            <div class="ingredient-row"><span class="ing-name">Tempe (panggang teflon)</span><span class="ing-amount">80g</span></div>
+            <div class="ingredient-row"><span class="ing-name">Kecap asin + bawang putih + merica</span><span class="ing-amount">secukupnya</span></div>
+            <div class="ingredient-row"><span class="ing-name">Perasan jeruk nipis + olive oil</span><span class="ing-amount">½ buah + ½ sdt</span></div>
+          </div>
+          <div class="steps-label">Cara Masak</div>
+          <div class="step-row"><div class="step-num">1</div><div>Marinasi daging: kecap asin + bawang putih + merica, 10 menit</div></div>
+          <div class="step-row"><div class="step-num">2</div><div>Panggang teflon panas, 3–4 menit per sisi. Jangan overdone</div></div>
+          <div class="step-row"><div class="step-num">3</div><div>Tempe: panggang teflon + kecap asin + bawang putih</div></div>
+          <div class="step-row"><div class="step-num">4</div><div>Salad: iris semua sayur + perasan jeruk nipis + olive oil + garam</div></div>
+          <div class="macro-row">
+            <div class="macro-chip"><div class="macro-val">853</div><div class="macro-label">kcal</div></div>
+            <div class="macro-chip"><div class="macro-val">73g</div><div class="macro-label">protein</div></div>
+            <div class="macro-chip"><div class="macro-val">~45g</div><div class="macro-label">karbo</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note-box"><strong>💡 Meal Prep</strong>Minggu malam: rebus 7 telur + marinasi ayam 3 hari ke depan. Pagi hari: panggang + tumis = 10–15 menit selesai.</div>
+  </div>
+
+  <!-- JADWAL -->
+  <div id="tab-jadwal" class="hidden fade-in">
+    <div class="section">
+      <div class="section-label">Rotasi Minggu Ini</div>
+      <table class="week-table"><thead><tr><th>Hari</th><th>Meal 1</th><th>Meal 2</th><th>Meal 3</th></tr></thead><tbody id="jadwalBody"></tbody></table>
+    </div>
+    <div class="total-bar">
+      <div class="total-item"><div class="total-val">~1,959</div><div class="total-label">Kcal (Ikan)</div></div>
+      <div class="total-item"><div class="total-val">~1,973</div><div class="total-label">Kcal (Daging)</div></div>
+      <div class="total-item"><div class="total-val">~176g</div><div class="total-label">Protein Ikan</div></div>
+      <div class="total-item"><div class="total-val">~172g</div><div class="total-label">Protein Daging</div></div>
+    </div>
+    <div class="note-box"><strong>📌 Aturan Gampang</strong>Tanggal ganjil = Ikan. Tanggal genap = Daging. Lihat tanggal HP, langsung tahu masak apa.</div>
+  </div>
+
+  <!-- BELANJA -->
+  <div id="tab-belanja" class="hidden fade-in">
+    <div class="section">
+      <div class="section-label">Grocery List Per Minggu</div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🥩 Protein Utama</div>
+        <div class="grocery-item"><span class="grocery-name">Dada ayam tanpa kulit</span><span class="grocery-qty">1.1 kg</span></div>
+        <div class="grocery-item"><span class="grocery-name">Ikan kakap / kembung / nila</span><span class="grocery-qty">880g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Daging sirloin / has dalam</span><span class="grocery-qty">600g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Telur ayam</span><span class="grocery-qty">7 butir</span></div>
+        <div class="grocery-item"><span class="grocery-name">Tahu putih</span><span class="grocery-qty">480g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Tempe</span><span class="grocery-qty">560g</span></div>
+      </div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🥤 Supplement</div>
+        <div class="grocery-item"><span class="grocery-name">Whey protein vanilla/coklat</span><span class="grocery-qty">~210g/minggu (beli 1 kg)</span></div>
+        <div class="grocery-item"><span class="grocery-name">Susu UHT skim</span><span class="grocery-qty">1.75 liter</span></div>
+        <div class="grocery-item"><span class="grocery-name">Almond (unsalted)</span><span class="grocery-qty">175g</span></div>
+      </div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🌾 Karbo</div>
+        <div class="grocery-item"><span class="grocery-name">Beras</span><span class="grocery-qty">Sesuai kebiasaan</span></div>
+      </div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🥦 Sayur</div>
+        <div class="grocery-item"><span class="grocery-name">Bayam / kangkung</span><span class="grocery-qty">~500g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Brokoli</span><span class="grocery-qty">~400g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Wortel</span><span class="grocery-qty">~300g</span></div>
+        <div class="grocery-item"><span class="grocery-name">Selada + tomat + timun</span><span class="grocery-qty">~300g</span></div>
+      </div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🍌 Buah</div>
+        <div class="grocery-item"><span class="grocery-name">Pisang ambon</span><span class="grocery-qty">7–8 buah</span></div>
+        <div class="grocery-item"><span class="grocery-name">Apel / pir (variasi)</span><span class="grocery-qty">3–4 buah</span></div>
+      </div>
+      <div class="grocery-cat"><div class="grocery-cat-title">🧂 Bumbu & Minyak</div>
+        <div class="grocery-item"><span class="grocery-name">Kecap asin</span><span class="grocery-qty">1 botol</span></div>
+        <div class="grocery-item"><span class="grocery-name">Bawang putih</span><span class="grocery-qty">1 kepala besar</span></div>
+        <div class="grocery-item"><span class="grocery-name">Kunyit bubuk</span><span class="grocery-qty">1 bungkus kecil</span></div>
+        <div class="grocery-item"><span class="grocery-name">Saus tiram rendah sodium</span><span class="grocery-qty">1 botol kecil</span></div>
+        <div class="grocery-item"><span class="grocery-name">Olive oil</span><span class="grocery-qty">1 botol kecil</span></div>
+        <div class="grocery-item"><span class="grocery-name">Jeruk nipis</span><span class="grocery-qty">4–5 buah</span></div>
+        <div class="grocery-item"><span class="grocery-name">Minyak goreng / minyak spray</span><span class="grocery-qty">Minimal</span></div>
+      </div>
+    </div>
+    <div class="note-box"><strong>💰 Tips Belanja</strong>Protein utama beli sekaligus, simpan freezer. Whey + almond beli bulanan. Sayur + buah per 3–4 hari agar segar.</div>
+  </div>
+
+</div>
+
+<script>
+const DAY_NAMES = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'];
+const MONTHS_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const SAYUR = ['Bayam','Brokoli','Kangkung','Bayam','Brokoli','Kangkung','Bayam'];
+const BUAH  = ['Pisang','Apel','Pisang','Pir','Pisang','Apel','Pisang'];
+
+function jsToWd(jsDay) { return jsDay === 0 ? 6 : jsDay - 1; }
+function fmtDate(d) { return d.getDate() + ' ' + MONTHS_ID[d.getMonth()] + ' ' + d.getFullYear(); }
+function isGanjil(d) { return d.getDate() % 2 !== 0; }
+
+function meal3BodyIkan() {
+  return `<div class="ingredient-list">
+    <div class="ingredient-row"><span class="ing-name">Ikan kakap / kembung / nila</span><span class="ing-amount">220g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">150g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Brokoli</span><span class="ing-amount">100g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Wortel</span><span class="ing-amount">100g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Tahu putih</span><span class="ing-amount">120g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Tempe</span><span class="ing-amount">80g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Kunyit + garam + bawang putih</span><span class="ing-amount">secukupnya</span></div>
+  </div>
+  <div class="steps-label">Cara Masak</div>
+  <div class="step-row"><div class="step-num">1</div><div>Balur ikan: kunyit + garam + bawang putih, 5 menit</div></div>
+  <div class="step-row"><div class="step-num">2</div><div>Panggang teflon, 4–5 menit per sisi</div></div>
+  <div class="step-row"><div class="step-num">3</div><div>Tahu + tempe: panggang teflon tanpa minyak</div></div>
+  <div class="step-row"><div class="step-num">4</div><div>Tumis brokoli + wortel: bawang putih + saus tiram + air, 3 menit</div></div>
+  <div class="macro-row">
+    <div class="macro-chip"><div class="macro-val">839</div><div class="macro-label">kcal</div></div>
+    <div class="macro-chip"><div class="macro-val">77g</div><div class="macro-label">protein</div></div>
+    <div class="macro-chip"><div class="macro-val">~40g</div><div class="macro-label">karbo</div></div>
+  </div>`;
+}
+
+function meal3BodyDaging() {
+  return `<div class="ingredient-list">
+    <div class="ingredient-row"><span class="ing-name">Daging sirloin / has dalam</span><span class="ing-amount">200g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Nasi putih matang</span><span class="ing-amount">120g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Selada + tomat + timun</span><span class="ing-amount">200g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Tempe</span><span class="ing-amount">80g</span></div>
+    <div class="ingredient-row"><span class="ing-name">Kecap asin + bawang putih + merica</span><span class="ing-amount">secukupnya</span></div>
+    <div class="ingredient-row"><span class="ing-name">Perasan jeruk nipis + olive oil</span><span class="ing-amount">½ buah + ½ sdt</span></div>
+  </div>
+  <div class="steps-label">Cara Masak</div>
+  <div class="step-row"><div class="step-num">1</div><div>Marinasi daging: kecap asin + bawang putih + merica, 10 menit</div></div>
+  <div class="step-row"><div class="step-num">2</div><div>Panggang teflon panas, 3–4 menit per sisi</div></div>
+  <div class="step-row"><div class="step-num">3</div><div>Tempe: panggang teflon + kecap asin</div></div>
+  <div class="step-row"><div class="step-num">4</div><div>Salad: iris sayur + jeruk nipis + olive oil + garam</div></div>
+  <div class="macro-row">
+    <div class="macro-chip"><div class="macro-val">853</div><div class="macro-label">kcal</div></div>
+    <div class="macro-chip"><div class="macro-val">73g</div><div class="macro-label">protein</div></div>
+    <div class="macro-chip"><div class="macro-val">~45g</div><div class="macro-label">karbo</div></div>
+  </div>`;
+}
+
+function renderHariIni() {
+  const now = new Date();
+  const wd  = jsToWd(now.getDay());
+  const ganjil = isGanjil(now);
+
+  document.getElementById('todayDayLabel').textContent = 'Hari Ini';
+  document.getElementById('todayDayName').textContent  = DAY_NAMES[wd];
+  document.getElementById('todayDateStr').textContent  = fmtDate(now);
+  document.getElementById('todaySayur').textContent    = SAYUR[wd];
+
+  if (ganjil) {
+    document.getElementById('todayM3Title').textContent  = 'Ikan Panggang';
+    document.getElementById('todayM3Sub').textContent    = '+ Nasi · Brokoli · Wortel · Tahu · Tempe';
+    document.getElementById('todayM3Kcal').innerHTML     = '839 <span class="meal-kcal-unit">kcal</span>';
+    document.getElementById('todayM3Prot').textContent   = '77g protein';
+    document.getElementById('todayMeal3Name').textContent= '🐟 Malam ini: Ikan Panggang';
+    document.getElementById('totalKcal').textContent     = '~1,959';
+    document.getElementById('totalProt').textContent     = '~176g';
+    document.getElementById('todayTotalKcal').textContent= '~1,959';
+    document.getElementById('body-today-m3').innerHTML   = meal3BodyIkan();
+  } else {
+    document.getElementById('todayM3Title').textContent  = 'Daging Panggang';
+    document.getElementById('todayM3Sub').textContent    = '+ Salad · Nasi kecil · Tempe';
+    document.getElementById('todayM3Kcal').innerHTML     = '853 <span class="meal-kcal-unit">kcal</span>';
+    document.getElementById('todayM3Prot').textContent   = '73g protein';
+    document.getElementById('todayMeal3Name').textContent= '🥩 Malam ini: Daging Panggang';
+    document.getElementById('totalKcal').textContent     = '~1,973';
+    document.getElementById('totalProt').textContent     = '~172g';
+    document.getElementById('todayTotalKcal').textContent= '~1,973';
+    document.getElementById('body-today-m3').innerHTML   = meal3BodyDaging();
+  }
+}
+
+function renderJadwal() {
+  const now   = new Date();
+  const today = jsToWd(now.getDay());
+  const tbody = document.getElementById('jadwalBody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + (i - today));
+    const ganjil = isGanjil(d);
+    const isToday = i === today;
+    const tr = document.createElement('tr');
+    if (isToday) tr.className = 'today-row';
+    tr.innerHTML =
+      `<td>${isToday ? '▶ ' : ''}${DAY_NAMES[i]}<br><span class="sayur-name">${d.getDate()}</span></td>` +
+      `<td>Ayam<br><span class="sayur-name">${SAYUR[i]}</span></td>` +
+      `<td>Shake<br><span class="sayur-name">${BUAH[i]}</span></td>` +
+      `<td class="${ganjil ? 'meal3-ikan' : 'meal3-daging'}">${ganjil ? '🐟 Ikan' : '🥩 Daging'}</td>`;
+    tbody.appendChild(tr);
+  }
+}
+
+function toggleCard(id) {
+  const body = document.getElementById('body-' + id);
+  const icon = document.getElementById('icon-' + id);
+  const open = body.classList.toggle('open');
+  if (icon) icon.classList.toggle('open', open);
+}
+
+function showMeal3Resep(type) {
+  document.getElementById('resep-ikan').classList.toggle('hidden', type !== 'ikan');
+  document.getElementById('resep-daging').classList.toggle('hidden', type !== 'daging');
+  document.getElementById('r3tab').className = 'meal3-tab' + (type === 'ikan' ? ' active-ikan' : '');
+  document.getElementById('r4tab').className = 'meal3-tab' + (type === 'daging' ? ' active-daging' : '');
+}
+
+function switchTab(tab) {
+  ['hari-ini','resep','jadwal','belanja'].forEach(t => {
+    document.getElementById('tab-' + t).classList.add('hidden');
+  });
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('tab-' + tab);
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('fade-in'), 10);
+  const idx = ['hari-ini','resep','jadwal','belanja'].indexOf(tab);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  if (tab === 'jadwal') renderJadwal();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderHariIni();
+  renderJadwal();
+});
+</script>
+</body>
+</html>
